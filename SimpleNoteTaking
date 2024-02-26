@@ -1,0 +1,80 @@
+using System;
+using System.IO;
+
+class Program
+{
+    private static string NoteDirectory = @"C:\Users\lenovo\source\repos\NoteApplication";
+
+    static void Main(string[] args)
+    {
+        if (!Directory.Exists(NoteDirectory))
+        {
+            Directory.CreateDirectory(NoteDirectory);
+        }
+
+        while (true)
+        {
+            Console.WriteLine("1. New Note");
+            Console.WriteLine("2. Show Notes");
+            Console.WriteLine("3. Exit");
+
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    NewNote();
+                    break;
+                case "2":
+                    ShowNotes();
+                    break;
+                case "3":
+                    return;
+                default:
+                    Console.WriteLine("Invalid choice. Please try again.");
+                    break;
+            }
+        }
+    }
+
+    private static void NewNote()
+    {
+        Console.WriteLine("Please Enter Note:\n");
+        string input = Console.ReadLine();
+
+        string fileName = DateTime.Now.ToString("yy-MM-dd_HH-mm-ss") + ".txt";
+        string filePath = Path.Combine(NoteDirectory, fileName);
+
+        try
+        {
+            File.WriteAllText(filePath, input);
+            Console.WriteLine("Note created successfully!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error creating note: " + ex.Message);
+        }
+    }
+
+    private static void ShowNotes()
+    {
+        string[] noteFiles = Directory.GetFiles(NoteDirectory, "*.txt");
+
+        if (noteFiles.Length == 0)
+        {
+            Console.WriteLine("No notes found.");
+        }
+        else
+        {
+            Console.WriteLine("Notes:");
+            foreach (var file in noteFiles)
+            {
+                string fileName = Path.GetFileName(file);
+                string content = File.ReadAllText(file);
+
+                Console.WriteLine($"- {fileName}:");
+                Console.WriteLine($"  {content}\n");
+            }
+        }
+    }
+}
