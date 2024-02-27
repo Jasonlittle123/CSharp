@@ -1,19 +1,24 @@
+using System;
+using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 using System.Diagnostics;
 
 namespace NoteApplication
 {
+
     class Program
     {
-        
 
-        private static string NoteDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\Notes\";
+
         static void Main(string[] args)
         {
             ReadCommand();
             Console.ReadLine();
         }
+
+        private static string NoteDirectory = @"C:\Users\lenovo\source\repos\NoteApplication\Notes";
+        //private static string NoteDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Notes");
 
         private static void ReadCommand()
         {
@@ -30,6 +35,10 @@ namespace NoteApplication
                     break;
                 case "edit":
                     EditNote();
+                    Main(null);
+                    break;
+                case "read":
+                    ReadNote();
                     Main(null);
                     break;
                 case "delete":
@@ -55,8 +64,6 @@ namespace NoteApplication
                     CommandsAvailable();
                     Main(null);
                     break;
-
-
             }
         }
 
@@ -65,32 +72,95 @@ namespace NoteApplication
             Console.WriteLine("Please Enter Note:\n");
             string input = Console.ReadLine();
 
-            XmlWriterSettings NoteSettings = new XmlWriterSettings();
-
-            NoteSettings.CheckCharacters = false;
-            NoteSettings.ConformanceLevel = ConformanceLevel.Auto;
-            NoteSettings.Indent = true;
-
             string FileName = DateTime.Now.ToString("dd-MM-yy") + ".xml";
+            string filePath = Path.Combine(NoteDirectory, FileName);
 
-            using (XmlWriter NewNoteWriter = XmlWriter.Create(NoteDirectory + FileName, NoteSettings))
+            try
             {
-                NewNoteWriter.WriteStartDocument();
-                NewNoteWriter.WriteStartElement("Note");
-                NewNoteWriter.WriteElementString("body", input);
-                NewNoteWriter.WriteEndElement();
+                // Ensure the directory exists
+                if (!Directory.Exists(NoteDirectory))
+                {
+                    Directory.CreateDirectory(NoteDirectory);
+                }
 
-                NewNoteWriter.Flush();
-                NewNoteWriter.Close();
+                // Create or overwrite the file with the note content
+                File.WriteAllText(filePath, $"<Note><body>{input}</body></Note>");
+
+                Console.WriteLine("Note created successfully!");
             }
-
-            Console.WriteLine("Note created successfully!");
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error creating note. An error occurred: " + ex.Message);
+            }
         }
+
+
+
 
         private static void EditNote()
         {
             Console.WriteLine("Please enter file name.\n");
+
             string FileName = Console.ReadLine().ToLower();
+
+            if (File.Exists(NoteDirectory + FileName))
+            {
+
+                XmlDocument doc = new XmlDocument();
+
+                try
+                {
+
+                    doc.Load(NoteDirectory + FileName);
+                    Console.Write(doc.SelectSingleNode("//body").InnerText);
+                    string ReadInput = Console.ReadLine();
+
+                    if (ReadInput.ToLower() == "cancel")
+
+                    {
+
+                        Main(null);
+
+                    }
+
+                    else
+
+                    {
+
+                        string newText = doc.SelectSingleNode("//body").InnerText = ReadInput;
+
+                        doc.Save(NoteDirectory + FileName);
+
+                    }
+
+                }
+
+                catch (Exception ex)
+
+                {
+
+                    Console.WriteLine("Could not edit note following error occurred: " + ex.Message);
+
+                }
+
+
+
+            }
+
+            else
+
+            {
+
+                Console.WriteLine("File not found\n");
+
+            }
+        }
+
+        private static void ReadNote()
+        {
+            Console.WriteLine("Please enter file name\n");
+
+            string FileName = Console.ReadLine();
 
             if (File.Exists(NoteDirectory + FileName))
             {
@@ -99,73 +169,95 @@ namespace NoteApplication
                 try
                 {
                     doc.Load(NoteDirectory + FileName);
-                    Console.Write(doc.SelectSingleNode("//body").InnerText);
-                    string ReadInput = Console.ReadLine();
-
-                    if (ReadInput.ToLower() == "cancel")
-                    {
-                        Main(null);
-                    }
-                    else
-                    {
-                        doc.SelectSingleNode("//body").InnerText = ReadInput;
-                        doc.Save(NoteDirectory + FileName);
-                        Console.WriteLine("Note edited successfully!");
-                    }
+                    Console.WriteLine("Note Content:\n");
+                    Console.WriteLine(doc.SelectSingleNode("//body").InnerText);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Could not edit note. An error occurred: " + ex.Message);
-                }
-            }
-            else
-            {
-                Console.WriteLine("File not found\n");
-            }
-
-        }
-        private static void DeleteNote()
-        {
-            Console.WriteLine("Please enter file name\n");
-            string FileName = Console.ReadLine();
-
-            if (File.Exists(NoteDirectory + FileName))
-            {
-                Console.WriteLine(Environment.NewLine + "Are you sure you wish to delete this file? Y/N\n");
-                string Confirmation = Console.ReadLine().ToLower();
-
-                if (Confirmation == "y")
-                {
-                    try
-                    {
-                        File.Delete(NoteDirectory + FileName);
-                        Console.WriteLine("File has been deleted\n");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("File not deleted following error occurred: " + ex.Message);
-                    }
-                }
-                else if (Confirmation == "n")
-                {
-                    Main(null);
-                }
-                else
-                {
-                    Console.WriteLine("Invalid command\n");
-                    DeleteNote(); // Recursive call to handle invalid commands
+                    Console.WriteLine("Could not read note. An error occurred: " + ex.Message);
                 }
             }
             else
             {
                 Console.WriteLine("File does not exist\n");
-                DeleteNote(); // Recursive call to handle non-existing files
+            }
+        }
+
+
+        private static void DeleteNote()
+        {
+            Console.WriteLine("Please enter file name\n");
+
+            string FileName = Console.ReadLine();
+
+
+            if (File.Exists(NoteDirectory + FileName))
+
+            {
+
+                Console.WriteLine(Environment.NewLine + "Are you sure you wish to delete this file? Y/N\n");
+
+                string Confirmation = Console.ReadLine().ToLower();
+
+
+                if (Confirmation == "y")
+
+                {
+
+                    try
+
+                    {
+
+                        File.Delete(NoteDirectory + FileName);
+
+                        Console.WriteLine("File has been deleted\n");
+
+                    }
+
+                    catch (Exception ex)
+
+                    {
+
+                        Console.WriteLine("File not deleted following error occured: " + ex.Message);
+
+                    }
+
+                }
+
+                else if (Confirmation == "n")
+
+                {
+
+                    Main(null);
+
+                }
+
+                else
+
+                {
+
+                    Console.WriteLine("Invalid command\n");
+
+                    DeleteNote();
+
+                }
+
+            }
+
+            else
+
+            {
+
+                Console.WriteLine("File does not exist\n");
+
+                DeleteNote();
+
             }
         }
 
         private static void CommandsAvailable()
         {
-            Console.WriteLine(" New - Create a new note\n Edit - Edit a note\n Read - Read a note\n ShowNotes - List all notes\n Exit - Exit the application\n Dir - Opens note directory\n Help - Shows this help message\n");
+            Console.WriteLine(" New - Create a new note\n Edit - Edit a note\n Read -  Read a note\n ShowNotes - List all notes\n Exit - Exit the application\n Dir - Opens note directory\n Help - Shows this help message\n");
         }
 
         private static void Exit()
@@ -181,10 +273,12 @@ namespace NoteApplication
 
             if (Directory.Exists(NoteLocation))
             {
+
                 FileInfo[] NoteFiles = Dir.GetFiles("*.xml");
 
                 if (NoteFiles.Count() != 0)
                 {
+
                     Console.SetCursorPosition(Console.CursorLeft + 1, Console.CursorTop + 2);
                     Console.WriteLine("+------------+");
                     foreach (var item in NoteFiles)
@@ -201,9 +295,13 @@ namespace NoteApplication
             }
             else
             {
+
                 Console.WriteLine(" Directory does not exist.....creating directory\n");
+
                 Directory.CreateDirectory(NoteLocation);
+
                 Console.WriteLine(" Directory: " + NoteLocation + " created successfully.\n");
+
             }
         }
 
@@ -211,6 +309,5 @@ namespace NoteApplication
         {
             Process.Start("explorer.exe", NoteDirectory);
         }
-
     }
 }
