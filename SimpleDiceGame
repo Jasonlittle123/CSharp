@@ -1,0 +1,66 @@
+namespace ProjectCSharp
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            int playerRandomNum;
+            int enmeyRandomNum;
+
+            int playerScore = 0;
+            int enemyScore = 0;
+
+            Random rand = new Random();
+
+            for (int i = 0; i < 10; i++)
+            {
+                Console.WriteLine("Prease Enter to roll the dice: ");
+
+                Console.ReadKey();
+
+                playerRandomNum = rand.Next(1, 7);
+                Console.WriteLine("Your rolled a " + playerRandomNum);
+
+                Console.WriteLine(".......");
+                System.Threading.Thread.Sleep(1000);
+
+                enmeyRandomNum = rand.Next(1, 7);
+                Console.WriteLine("Enemy AI rolled a " + enmeyRandomNum);
+
+                if (playerRandomNum > enmeyRandomNum)
+                {
+                    playerScore++;
+                    Console.WriteLine("Player win this round.");
+                }
+                else if (playerRandomNum < enmeyRandomNum)
+                {
+                    enemyScore++;
+                    Console.WriteLine("Enemy AI win this round.");
+                }
+                else
+                {
+                    Console.WriteLine("Draw.");
+                }
+
+                Console.WriteLine();
+                Console.WriteLine($"Player score is {playerScore} and Enemy score is {enemyScore}");
+                Console.WriteLine();
+            }
+
+            if(playerScore > enemyScore)
+            {
+                Console.WriteLine("Player Win...");
+            }
+            else if (playerScore < enemyScore)
+            {
+                Console.WriteLine("Enemy Ai win...");        
+            }
+            else
+            {
+                Console.WriteLine("Draw");
+            }
+
+            Console.ReadLine();
+        }
+    }
+}
